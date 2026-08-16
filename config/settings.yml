@@ -1454,7 +1454,14 @@ engines:
   categories:
   - news
   shortcut: spn
-  disabled: false
+  # (Tom 2026-08-05) WYLACZONY W STANIE STARTOWYM. Startpage konsekwentnie
+  # oddawal CAPTCHA (200 razy w 21 h, 2026-07-22) albo "parsing error"
+  # (2026-08-02), przez co przy pieciu silnikach alarm SLOW_ALERT bil 3/5.
+  # Po recznym wylaczeniu go przez usera alarm zniknal calkowicie. Ten plik
+  # jest ZARAZEM wzorcem startowym i zrodlem migawki factory_defaults, wiec
+  # bez tej linii silnik wracal i po instalacji, i po kazdym Resecie.
+  # User moze go wlaczyc w zakladce SearxNG, gdy Startpage naprawi bramke.
+  disabled: true
 - name: startpage images
   engine: startpage
   startpage_categ: images
