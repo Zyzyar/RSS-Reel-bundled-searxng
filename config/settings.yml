@@ -20,6 +20,34 @@ search:
   default_lang: auto
   ban_time_on_fail: 5
   max_ban_time_on_fail: 120
+  # RSS-REEL NOTE: the suspended_times below are SearxNG's ORIGINAL defaults
+  # and should stay that way. Do not shorten them.
+  #
+  # These penalties are not our preference. They follow how search engines
+  # treat automated traffic: an engine that has refused or challenged a query
+  # keeps refusing on its own terms. Knocking again sooner does not bring it
+  # back faster - it tends to provoke a longer block and leaves the engine
+  # unusable for longer than a suspension waited out calmly. Shorter penalties
+  # on our side do not improve results either: an engine that answers, answers
+  # equally well however long it was held back after its last refusal.
+  #
+  # History: on 2026-09-02 these values were cut to 5-15 minutes. SearxNG's
+  # defaults are sized for a PUBLIC instance, with thousands of people behind
+  # one IP address; here there is a single user on their own machine, where a
+  # day of silence costs the whole search. The symptom behind that change
+  # (2026-09-01): a suspended engine is not queried at all and the state lives
+  # in process memory, so every news engine went quiet at once and stayed
+  # quiet long after the cause had passed, until a manual restart. The
+  # reasoning was about this installation, but the numbers are about the
+  # engines, so the change was reverted on 2026-09-03. The escalating penalty
+  # (`ban_time_on_fail`, 5 s per failure, capped at 120 s) was never changed.
+  #
+  # The escape hatch for the case where EVERYTHING goes quiet at once lives
+  # elsewhere and stays: `[SEARXNG_MONITOR]` in `rss_server.py` runs a real
+  # search every 10 minutes and restarts SearxNG after two empty results.
+  # Suspensions live in process memory, so a restart clears them. That is the
+  # right place for a rescue: a one-off exit from the cascade, not constant
+  # pressure on the providers.
   suspended_times:
     SearxEngineAccessDenied: 86400
     SearxEngineCaptcha: 86400
@@ -1454,13 +1482,14 @@ engines:
   categories:
   - news
   shortcut: spn
-  # (Tom 2026-08-05) WYLACZONY W STANIE STARTOWYM. Startpage konsekwentnie
-  # oddawal CAPTCHA (200 razy w 21 h, 2026-07-22) albo "parsing error"
-  # (2026-08-02), przez co przy pieciu silnikach alarm SLOW_ALERT bil 3/5.
-  # Po recznym wylaczeniu go przez usera alarm zniknal calkowicie. Ten plik
-  # jest ZARAZEM wzorcem startowym i zrodlem migawki factory_defaults, wiec
-  # bez tej linii silnik wracal i po instalacji, i po kazdym Resecie.
-  # User moze go wlaczyc w zakladce SearxNG, gdy Startpage naprawi bramke.
+  # RSS-REEL NOTE (2026-08-05): DISABLED in the shipped state. Startpage kept
+  # answering with a CAPTCHA (200 times in 21 h, 2026-07-22) or a "parsing
+  # error" (2026-08-02), which made the SLOW_ALERT alarm fire at 3/5 with five
+  # engines enabled. Once the engine was switched off by hand, the alarm went
+  # away completely. This file is BOTH the starting template and the source of
+  # the factory_defaults snapshot, so without this line the engine came back
+  # after every installation and after every Reset.
+  # The user can enable it in the SearxNG tab once Startpage fixes its gate.
   disabled: true
 - name: startpage images
   engine: startpage
